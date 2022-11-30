@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Giang Lake</title>
+  </head>
+  <style>
+    .bar {
+      width: 300px;
+      padding: 5px 0;
+      color: #fff;
+      text-align: center;
+      margin-top: 5px;
+    }
+    .bar.hp {
+      background-color: #f00;
+    }
+    .bar.mp {
+      background-color: #00f;
+    }
+  </style>
+  <body>
+    <div id="app">
+      <div v-if="!id">
+        <input type="text" v-model="user.name" />
+        <button @click="isekai()">isekai</button>
+      </div>
+      <div v-else>
+        <div>Tên: {{ user.name }}</div>
+        <div>Tuổi: {{ user.age }}</div>
+        <div>Sức mạnh: {{ user.str }}</div>
+        <div>Nhanh nhẹn: {{ user.agi }}</div>
+        <div>Thông minh: {{ user.int }}</div>
+        <div class="bar hp">{{ user.hp }} / {{ user.hpMax }}</div>
+        <div class="bar mp">{{ user.mp }} / {{ user.mpMax }}</div>
+        <button @click="startEvent()">pause</button>
+      </div>
+    </div>
+  </body>
+  <script src="socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script>
+    // const server = io("http://192.168.1.100:8000")
+    const server = io("http://localhost:8000");
+    var appMessenger = new Vue({
+      el: "#app",
+      data: {
+        id: null,
+        list: [],
+        isUpdate: true,
+        user: {
+          name: "",
+          age: 10,
+          hp: 100,
+          mp: 100,
+          hpMax: 100,
+          mpMax: 100,
+          ageMax: 60,
+          str: 1,
+          agi: 1,
+          int: 1,
+          lck: 0,
+
+        },
+      },
+      created() {
+        server.on("playerJoin", (listPlayer) => {
+          console.log("listPlayer", listPlayer);
+        });
+        server.on("returnId", (id) => {
+          this.id = id;
+          this.start();
+          console.log("id", id);
+        });
+        server.on("getEvent", prop => {
+          console.log('prop',prop)
+          const {
+            ageMax,
+            hpMax,
+            mpMax,
+            str,
+            agi,
+            int,
+            lck
+          } = prop;
+          if (ageMax) this.user.ageMax += ageMax;
+          if (hpMax) {
+            this.user.hp += hpMax;
+            this.user.hpMax += hpMax;
+          }
+          if (mpMax) {
+            this.user.mp += mpMax;
+            this.user.mpMax += mpMax;
+          }
+          if (str) this.user.str += str;
+          if (agi) this.user.agi += agi;
+          if (int) this.user.int += int;
+          if (lck) this.user.lck += lck;
+        });
+      },
+      methods: {
+        isekai() {
+          server.emit("isekai", this.user.name);
+        },
+        start() {
+          const update = setInterval(() => {
+            if (this.isUpdate) {
+              this.user.hpMax++;
+              this.user.mpMax++;
+              this.user.hp++;
+              this.user.mp++;
+            }
+          }, 1000);
+
+          const live = setInterval(() => {
+            if(this.user.age >= this.user.ageMax) {
+              clearInterval(update);
+              clearInterval(live);
+            }
+            this.user.age++;
+          }, 60000);
+        },
+        startEvent() {
+          server.emit('startEvent', this.user);
+        },
+      },
+    });
+  </script>
+</html>

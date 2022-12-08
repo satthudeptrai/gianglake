@@ -5,6 +5,8 @@ const server = require("http").Server(app);
 const io = require("socket.io")(server);
 server.listen(8000, () => console.log("http://localhost:8000"));
 const { give, meet } = require('./listEvent');
+const { specialStatus, status } = require('./listStatus');
+const { skill } = require('./listSkill');
 
 const listPlayer = [];
 const listEvent = [
@@ -46,8 +48,16 @@ io.on("connection", (e) => {
   e.on("isekai", (name) => {
     const indexTemp = listPlayer.findIndex(i => i.id === e.id);
     listPlayer[indexTemp].name = name;
+    const spe = roll(101, 101);
+    let status = null;
+    if (spe >= 80) {
+      status = specialStatus[roll(9) + 1];
+    }
     io.sockets.emit('playerJoin', listPlayer);
-    e.emit('returnId', e.id);
+    e.emit('returnPlayer', {
+      id: e.id,
+      status: status
+    });
   });
 
   e.on('startEvent', user => {

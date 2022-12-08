@@ -52,25 +52,39 @@
         isUpdate: true,
         user: {
           name: "",
+          ageMax: 60,
+          hpMax: 100,
+          mpMax: 100,
+          yangMax: 0,
+          yinMax: 0,
+          posMax: 0,
           age: 10,
           hp: 100,
           mp: 100,
-          hpMax: 100,
-          mpMax: 100,
-          ageMax: 60,
+          yang: 1,
+          yin: 1,
+          pos: 1,
           str: 1,
           agi: 1,
           int: 1,
           lck: 0,
-          skill: []
+          yangRes: 0,
+          yinRes: 0,
+          posRes: 0,
+          skill: [],
+          status: [],
         },
       },
       created() {
         server.on("playerJoin", (listPlayer) => {
           console.log("listPlayer", listPlayer);
         });
-        server.on("returnId", (id) => {
+        server.on("returnPlayer", props => {
+          const { id, status } = props;
           this.id = id;
+          if (status) {
+            this.user.status.push(status);
+          }
           this.start();
           console.log("id", id);
         });
@@ -83,7 +97,16 @@
             str,
             agi,
             int,
-            lck
+            lck,
+            yangMax,
+            yinMax,
+            posMax,
+            yangRes,
+            yinRes,
+            posRes,
+            yang,
+            yin,
+            pos
           } = prop;
           if (ageMax) this.user.ageMax += ageMax;
           if (hpMax) {
@@ -98,6 +121,16 @@
           if (agi) this.user.agi += agi;
           if (int) this.user.int += int;
           if (lck) this.user.lck += lck;
+          if (yangMax) this.user.yangMax += yangMax;
+          if (yinMax) this.user.yinMax += yinMax;
+          if (posMax) this.user.posMax += posMax;
+          if (yangRes) this.user.yangRes += yangRes;
+          if (yinRes) this.user.yinRes += yinRes;
+          if (posRes) this.user.posRes += posRes;
+          if (posMax) this.user.posMax += posMax;
+          if (yang) this.user.yang += yang;
+          if (yin) this.user.yin += yin;
+          if (pos) this.user.pos += pos;
         });
       },
       methods: {
